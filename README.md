@@ -59,6 +59,9 @@ validator disagreement. This contract intentionally records release readiness
 instead of transferring tokens because GenLayer Studio does not currently
 support token transfers; an integrating protocol can consume the terminal state.
 
+The hosted Full Consensus deployment and finalized lifecycle are recorded in
+[`STUDIO_RESULTS.md`](STUDIO_RESULTS.md).
+
 ## License
 
 MIT

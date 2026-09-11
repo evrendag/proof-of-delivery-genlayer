@@ -10,8 +10,8 @@ import typing
 @allow_storage
 @dataclass
 class WorkItem:
-    client: Address
-    worker: Address
+    client: str
+    worker: str
     requirements: str
     delivery: str
     evidence: str
@@ -38,7 +38,7 @@ class ProofOfDelivery(gl.Contract):
     @gl.public.write
     def create_work(
         self,
-        worker: Address,
+        worker: str,
         requirements: str,
         max_attempts: u32,
     ):
@@ -49,8 +49,8 @@ class ProofOfDelivery(gl.Contract):
 
         work_id = self.next_work_id
         self.work_items[work_id] = WorkItem(
-            gl.message.sender_address,
-            worker,
+            str(gl.message.sender_address),
+            str(worker),
             requirements,
             "",
             "",
@@ -60,7 +60,7 @@ class ProofOfDelivery(gl.Contract):
             "",
             "OPEN",
             u32(0),
-            max_attempts,
+            u32(max_attempts),
         )
         self.next_work_id += u32(1)
 
@@ -69,7 +69,7 @@ class ProofOfDelivery(gl.Contract):
         if work_id >= self.next_work_id:
             raise gl.vm.UserError("Work item does not exist")
         item = self.work_items[work_id]
-        if gl.message.sender_address != item.worker:
+        if str(gl.message.sender_address).lower() != item.worker.lower():
             raise gl.vm.UserError("Only the assigned worker may submit")
         if item.status not in ("OPEN", "REVISION_REQUIRED"):
             raise gl.vm.UserError("Work item is not accepting deliveries")
@@ -207,7 +207,7 @@ PASS must use NONE. FAIL and REVIEW must not use NONE.
         if work_id >= self.next_work_id:
             raise gl.vm.UserError("Work item does not exist")
         item = self.work_items[work_id]
-        if gl.message.sender_address != item.client:
+        if str(gl.message.sender_address).lower() != item.client.lower():
             raise gl.vm.UserError("Only the client may resolve manual review")
         if item.status != "MANUAL_REVIEW":
             raise gl.vm.UserError("Work item is not awaiting manual review")
@@ -223,7 +223,7 @@ PASS must use NONE. FAIL and REVIEW must not use NONE.
         if work_id >= self.next_work_id:
             raise gl.vm.UserError("Work item does not exist")
         item = self.work_items[work_id]
-        if gl.message.sender_address != item.client:
+        if str(gl.message.sender_address).lower() != item.client.lower():
             raise gl.vm.UserError("Only the client may cancel")
         if item.status != "OPEN":
             raise gl.vm.UserError("Only open work may be cancelled")
@@ -234,7 +234,7 @@ PASS must use NONE. FAIL and REVIEW must not use NONE.
         return self.work_items.get(
             work_id,
             WorkItem(
-                self.owner, self.owner, "", "", "", "", u32(0),
+                str(self.owner), str(self.owner), "", "", "", "", u32(0),
                 "NONE", "", "NOT_FOUND", u32(0), u32(0),
             ),
         )
